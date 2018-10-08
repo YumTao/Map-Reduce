@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
@@ -30,8 +31,10 @@ public class WordCountMapper extends Mapper<LongWritable, Text, Text, IntWritabl
 		Map<String, Integer> word2Count = new HashMap<>();
 		String line = value.toString();
 		Arrays.asList(line.split(" ")).stream().forEach(word -> {
-			int count = word2Count.get(word) == null ? 0 : word2Count.get(word);
-			word2Count.put(word, ++count);
+			if (StringUtils.isNotEmpty(word.trim())) {
+				int count = word2Count.get(word) == null ? 0 : word2Count.get(word);
+				word2Count.put(word, ++count);
+			}
 		});
 
 		// 2.输出
