@@ -8,11 +8,18 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 
 public class FlowCountRunner {
-	
+
+	/**
+	 * MR程序本地运行，支持debug模式，设置conf.set("mapreduce.framework.name", "local")即可
+	 * windows下，需将对应HADOOP_HOME对应的hadoop替换成windows编译的版本
+	 * 
+	 * @param args
+	 * @throws Exception
+	 */
 	public static void main(String[] args) throws Exception {
 		Configuration conf = new Configuration();
-		conf.set("mapreduce.framework.name", "yarn");
-		conf.set("yarn.resourcemanager.hostname", "singlenode");
+		conf.set("mapreduce.framework.name", "local");
+//		conf.set("yarn.resourcemanager.hostname", "singlenode");
 		Job flJob = Job.getInstance(conf);
 
 		flJob.setJarByClass(FlowCountRunner.class);
@@ -26,8 +33,8 @@ public class FlowCountRunner {
 		flJob.setOutputKeyClass(Text.class);
 		flJob.setOutputValueClass(Text.class);
 
-		FileInputFormat.setInputPaths(flJob, new Path(args[0]));
-		FileOutputFormat.setOutputPath(flJob, new Path(args[1]));
+		FileInputFormat.setInputPaths(flJob, new Path("D:/BaiduNetdiskDownload/flow.log"));
+		FileOutputFormat.setOutputPath(flJob, new Path("D:/BaiduNetdiskDownload/out/"));
 
 		boolean flag = flJob.waitForCompletion(true);
 		System.exit(flag ? 0 : 1);
