@@ -33,8 +33,8 @@ public class FlowCountRunner {
 		flJob.setOutputKeyClass(Text.class);
 		flJob.setOutputValueClass(Text.class);
 
-		FileInputFormat.setInputPaths(flJob, new Path("D:/BaiduNetdiskDownload/flow.log"));
-		FileOutputFormat.setOutputPath(flJob, new Path("D:/BaiduNetdiskDownload/out/"));
+		FileInputFormat.setInputPaths(flJob, new Path("D:/tmp/mr/flow.log"));
+		FileOutputFormat.setOutputPath(flJob, new Path("D:/tmp/mr/out/"));
 
 		boolean flag = flJob.waitForCompletion(true);
 		System.exit(flag ? 0 : 1);
