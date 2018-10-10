@@ -68,6 +68,7 @@ public class FlowCountOrderMR {
 	public static void main(String[] args) throws Exception {
 		Configuration conf = new Configuration();
 		conf.set("mapreduce.framework.name", "local");
+//		conf.set("mapreduce.framework.name", "yarn");
 //		conf.set("yarn.resourcemanager.hostname", "singlenode");
 		Job orderJob = Job.getInstance(conf);
 		orderJob.setJarByClass(FlowCountOrderMR.class);
