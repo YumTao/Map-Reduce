@@ -29,16 +29,16 @@ MapReduce分布式计算框架，用户只需编写具体业务代码即可。�
 - 5.reducetask根据自己的分区号，到各个maptask所在机器获取对应分区，并在reducetask机器上进行分区合并、排序。
 - 6.reducetask执行reduce，完成后输出文件到指定目录
 
-###分片
+### 分片
 切片定义在InputFormat类中的getSplit()方法
 （**分片策略**：先根据文件数分片，在根据blocksize分片-单个文件大于blocksize时再按blocksize进行切分，小于则不切分）
 `此处要贴图`
 
-###map输出内存缓冲区
+### map输出内存缓冲区
 内存缓冲区大小会影响到mapreduce程序的执行效率，原则上说，缓冲区越大，磁盘io的次数越少，执行速度就越快 
 缓冲区的大小可以通过参数调整,  参数：io.sort.mb  默认100M
 
-###partition
+### partition
 partition：对map输出按key进行分区，及排序。约定partition后的分区数=reducetask数=输出文件数
 自定义partition从而实现自定义的分区规则（业务场景：对key为手机号码的按归属地进行分区）
 步骤：
