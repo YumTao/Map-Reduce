@@ -47,4 +47,10 @@ partition：对map输出按key进行分区，及排序。约定partition后的�
 myPartitionJob.setPartitionerClass(PhonePartition.class);
 myPartitionJob.setNumReduceTasks(partitionNums);
 
+### combine
+` TODO，设置combine类 `
+
+### MR的数据压缩
+`TODO`
+
 
