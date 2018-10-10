@@ -14,7 +14,7 @@ import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 
-import com.yumtao.flowcount.vo.FlowVo;
+import com.yumtao.flowcount.order.vo.FlowVo;
 
 /**
  * 1.对流量统计后的数据按总流量进行倒序排列

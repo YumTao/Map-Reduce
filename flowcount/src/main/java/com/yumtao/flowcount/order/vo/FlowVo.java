@@ -1,4 +1,4 @@
-package com.yumtao.flowcount.vo;
+package com.yumtao.flowcount.order.vo;
 
 import java.io.DataInput;
 import java.io.DataOutput;
