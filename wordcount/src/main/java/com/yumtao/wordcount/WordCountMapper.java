@@ -14,6 +14,7 @@ import org.apache.hadoop.mapreduce.Mapper;
 /**
  * 统计单词出现个数 map&reduce: 分而治之思想， map负责多工位毛加工，reduce负责统一处理至成品
  * 
+ * 新增：打印MR程序执行流程信息
  * @author yumTao
  *
  */
@@ -27,6 +28,7 @@ public class WordCountMapper extends Mapper<LongWritable, Text, Text, IntWritabl
 		// key 为每次读取的行数
 		// value 为每次读取的文本值
 
+		System.out.println(String.format("once mapper oper: key=%s", key.toString()));
 		// 1.切分文本，到 单词=次数 map
 		Map<String, Integer> word2Count = new HashMap<>();
 		String line = value.toString();
@@ -40,6 +42,7 @@ public class WordCountMapper extends Mapper<LongWritable, Text, Text, IntWritabl
 		// 2.输出
 		word2Count.forEach((word, count) -> {
 			try {
+				System.out.println(String.format("once mapper oper write: key=%s value=%d", word, count));
 				context.write(new Text(word), new IntWritable(count));
 			} catch (Exception e) {
 				e.printStackTrace();

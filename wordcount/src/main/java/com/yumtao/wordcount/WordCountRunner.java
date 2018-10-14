@@ -14,8 +14,9 @@ public class WordCountRunner {
 
 		// 获取job实例
 		Configuration conf = new Configuration();
-		conf.set("mapreduce.framework.name", "yarn");
-		conf.set("yarn.resourcemanager.hostname", "master");
+		conf.set("mapreduce.framework.name", "local");
+//		conf.set("mapreduce.framework.name", "yarn");
+//		conf.set("yarn.resourcemanager.hostname", "master");
 		Job wcJob = Job.getInstance(conf);
 		// 指定job所在的jar包
 		// wcJob.setJar("D:/wordcount/wordcount.jar");
@@ -30,9 +31,15 @@ public class WordCountRunner {
 
 		wcJob.setOutputKeyClass(Text.class);
 		wcJob.setOutputValueClass(IntWritable.class);
+		
+		wcJob.setCombinerClass(Combine.class);
+		wcJob.setPartitionerClass(Partition.class);
+		wcJob.setNumReduceTasks(2);
 
-		FileInputFormat.setInputPaths(wcJob, new Path(args[0]));
-		FileOutputFormat.setOutputPath(wcJob, new Path(args[1]));
+//		FileInputFormat.setInputPaths(wcJob, new Path(args[0]));
+//		FileOutputFormat.setOutputPath(wcJob, new Path(args[1]));
+		FileInputFormat.setInputPaths(wcJob, new Path("/Users/huangqikai/yqt/tmp/mr/wordcount/input/test.log"));
+		FileOutputFormat.setOutputPath(wcJob, new Path("/Users/huangqikai/yqt/tmp/mr/wordcount/output"));
 
 		boolean flag = wcJob.waitForCompletion(true);
 		System.exit(flag ? 0 : 1);

@@ -12,13 +12,13 @@ import org.apache.hadoop.mapreduce.Reducer;
  * @author 56243
  *
  */
-public class WordCountReduce extends Reducer<Text, IntWritable, Text, IntWritable> {
+public class Combine extends Reducer<Text, IntWritable, Text, IntWritable> {
 
 	@Override
 	protected void reduce(Text key, Iterable<IntWritable> values,
 			Reducer<Text, IntWritable, Text, IntWritable>.Context context) throws IOException, InterruptedException {
 
-		System.out.println(String.format("once reduce oper: key=%s", key.toString()));
+		System.out.println(String.format("once combine oper: key=%s", key.toString()));
 		// 传进来的都是相同key的一组，如 hello, [1,1,3,4]
 		int count = 0;
 		for (IntWritable value : values) {
