@@ -7,6 +7,11 @@ import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 
+/**
+ * mr程序注册提交
+ * @author yumTao
+ *
+ */
 public class FlowCountRunner {
 
 	/**
@@ -33,9 +38,9 @@ public class FlowCountRunner {
 
 		flJob.setOutputKeyClass(Text.class);
 		flJob.setOutputValueClass(Text.class);
-
+		
 		FileInputFormat.setInputPaths(flJob, new Path("D:/tmp/mr/flow.log"));
-		FileOutputFormat.setOutputPath(flJob, new Path("D:/tmp/mr/out/"));
+		FileOutputFormat.setOutputPath(flJob, new Path("D:/tmp/mr/out_combine/"));
 
 		boolean flag = flJob.waitForCompletion(true);
 		System.exit(flag ? 0 : 1);

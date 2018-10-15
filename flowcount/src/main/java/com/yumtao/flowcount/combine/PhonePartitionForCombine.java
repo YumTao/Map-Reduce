@@ -1,4 +1,4 @@
-package com.yumtao.flowcount.mypartition;
+package com.yumtao.flowcount.combine;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -6,9 +6,14 @@ import java.util.Map;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Partitioner;
 
-import com.yumtao.flowcount.mypartition.vo.FlowAndPhoneVo;
+import com.yumtao.flowcount.combine.vo.FlowAndPhoneVoForCombine;
 
-public class PhonePartition extends Partitioner<FlowAndPhoneVo, Text> {
+/**
+ * @desc partitioner的<k,v>要与mapper的输出相对应 
+ * @author yumTao
+ *
+ */
+public class PhonePartitionForCombine extends Partitioner<FlowAndPhoneVoForCombine, Text> {
 
 	static Map<String, Integer> provinceMap = new HashMap<String, Integer>();
 
@@ -21,7 +26,7 @@ public class PhonePartition extends Partitioner<FlowAndPhoneVo, Text> {
 	}
 
 	@Override
-	public int getPartition(FlowAndPhoneVo key, Text value, int numPartitions) {
+	public int getPartition(FlowAndPhoneVoForCombine key, Text value, int numPartitions) {
 		System.out.println(String.format("once partition oper: key=%s", key.toString()));
 		String phoneHead = key.getPhone().substring(0, 3);
 		Integer code = provinceMap.get(phoneHead);

@@ -7,6 +7,11 @@ import java.util.List;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 
+/**
+ * reducer： 对mapper的输出进行汇总统计，并输出
+ * @author yumTao
+ *
+ */
 public class FlowCountReducer extends Reducer<Text, Text, Text, Text> {
 
 	@Override

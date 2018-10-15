@@ -8,6 +8,11 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 
+/**
+ * mapper: 分而治之任务中分业务，获取单个节点的结果集。
+ * @author yumTao
+ *
+ */
 public class FlowCountMapper extends Mapper<LongWritable, Text, Text, Text> {
 
 	@Override
