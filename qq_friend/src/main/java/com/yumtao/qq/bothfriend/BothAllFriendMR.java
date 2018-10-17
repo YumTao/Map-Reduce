@@ -15,7 +15,7 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 
 /**
  * @src A-J O
- * @goal 对两两用户对共有的一个好友，统计成两两用户对共有的所有好友。
+ * @goal 在BothOneFriendMR的基础上，对两两用户对共有的一个好友，统计成两两用户对共有的所有好友。
  * @action 比较简单，直接以key为两两用户对，对单个好友求和即可
  * @author yumTao
  *

@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -16,6 +14,8 @@ import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+
+import com.yumtao.qq.util.MyStringUtil;
 
 /**
  * @src 原数据格式 A:B,C,D,F,E,O B:A,C,E,K
@@ -90,27 +90,13 @@ public class BothOneFriendMR {
 			for (int i = 0; i < users.size(); i++) {
 				for (int j = i + 1; j < users.size(); j++) {
 					String userCp = users.get(i) + "-" + users.get(j);
-					String seqUserCp = seqUserCp(userCp);
+					String seqUserCp = MyStringUtil.seqUserCp(userCp, "-");
 					context.write(new Text(seqUserCp), new Text(friend));
 					System.out.println(String.format("once reduce write: key=%s, value=%s", seqUserCp, friend));
 				}
 			}
 		}
 
-		/**
-		 * @goal 对用户对进行排序，如 A-B -> A-B, B-A -> A-B 为后续操作带来便利
-		 * 
-		 * @param userCp
-		 * @return
-		 */
-		private String seqUserCp(String userCp) {
-			Set<String> userSet = new TreeSet<>();
-			userSet.addAll(Arrays.asList(userCp.split("-")));
-
-			StringBuilder seqUserCpCache = new StringBuilder();
-			userSet.stream().forEach(user -> seqUserCpCache.append(user).append("-"));
-			return seqUserCpCache.subSequence(0, seqUserCpCache.length() - 1).toString();
-		}
 
 	}
 
