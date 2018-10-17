@@ -9,6 +9,7 @@
 	<modules>
 		<module>wordcount</module>
 		<module>flowcount</module>
+		<module>qq_friend</module>
 	</modules>
 
 	<dependencies>
