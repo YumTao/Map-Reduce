@@ -11,6 +11,7 @@ import org.apache.hadoop.io.WritableComparator;
  * 3.重写compare(WritableComparable a, WritableComparable b)方法，来决定是否在同一组
  * 
  * @TODO 文件末尾追加Order_0000001	Pdt_02	1000.0 后，执行结果异常，如果将次记录放置在与其相同订单编号下又正常了。思考？？？
+ * @notice 要出现在reduce<k,v>同一组中，如果不进行分区的话，那么预期同一组的数据在行数上必须连续
  * @author yumTao
  *
  */
