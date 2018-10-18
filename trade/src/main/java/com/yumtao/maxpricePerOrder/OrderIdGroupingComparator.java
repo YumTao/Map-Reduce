@@ -9,6 +9,8 @@ import org.apache.hadoop.io.WritableComparator;
  * 1.继承WritableComparator接口
  * 2.无参构造，传入对应Mapper的输出key
  * 3.重写compare(WritableComparable a, WritableComparable b)方法，来决定是否在同一组
+ * 
+ * @TODO 文件末尾追加Order_0000001	Pdt_02	1000.0 后，执行结果异常，如果将次记录放置在与其相同订单编号下又正常了。思考？？？
  * @author yumTao
  *
  */
