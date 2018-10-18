@@ -10,6 +10,7 @@
 		<module>wordcount</module>
 		<module>flowcount</module>
 		<module>qq_friend</module>
+		<module>trade</module>
 	</modules>
 
 	<dependencies>
