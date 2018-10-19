@@ -1,7 +1,6 @@
 package com.yumtao.maxpricePerOrder;
 
 import java.io.IOException;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,18 +30,6 @@ public class MaxPricePerOrderMR {
 	private static final Logger log = LoggerFactory.getLogger(MaxPricePerOrderMR.class);
 
 	static class MaxPricePerOrderMapper extends Mapper<LongWritable, Text, OrderDetailVo, OrderDetailVo> {
-
-		// TODO 分布式缓存集群测试
-		@Override
-		protected void setup(Mapper<LongWritable, Text, OrderDetailVo, OrderDetailVo>.Context context)
-				throws IOException, InterruptedException {
-			URI[] cacheFiles = context.getCacheFiles();
-			if (null != cacheFiles && cacheFiles.length > 0) {
-				for (URI uri : cacheFiles) {
-					log.error(uri.getPath());
-				}
-			}
-		}
 
 		/**
 		 * 构造OrderDetailVo，OrderDetailVo输出

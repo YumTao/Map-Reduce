@@ -30,3 +30,11 @@ MapReduce分布式计算框架，用户只需编写具体业务代码即可。�
 - 6.合并：内存缓冲区的数据溢写到磁盘，与之前溢写到磁盘的文件进行按分区合并，并继续执行combine，进一步减少reduce获取数据的网络传输时间。
 - 7.reducetask根据自己的分区号，到各个maptask所在机器获取对应分区，并在reducetask机器上进行分区合并、排序。
 - 8.reducetask执行reduce，完成后输出文件到指定目录
+
+## 待做工作
+1. 自定义inputFormat实现
+2. 自定义outputFormat实现
+3. 分布式缓存实现
+4. mapreduce其他补充：计数器应用，多job串联
+5. mapreduce参数优化：资源相关参数，容错相关参数，本地运行mapreduce作业，效率和稳定性相关参数
+文件：04_离线计算系统第4天
