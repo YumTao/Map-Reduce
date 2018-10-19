@@ -8,6 +8,12 @@ import org.apache.hadoop.mapreduce.Partitioner;
 
 import com.yumtao.flowcount.mypartition.vo.FlowAndPhoneVo;
 
+/**
+ * 自定义partition，默认值是从0开始的
+ * 
+ * @author yumTao
+ *
+ */
 public class PhonePartition extends Partitioner<FlowAndPhoneVo, Text> {
 
 	static Map<String, Integer> provinceMap = new HashMap<String, Integer>();

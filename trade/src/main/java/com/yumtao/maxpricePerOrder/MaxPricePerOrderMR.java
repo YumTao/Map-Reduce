@@ -13,6 +13,8 @@ import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @goal trade_records.txt文件求每笔订单中最大交易额的记录
@@ -25,6 +27,8 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
  *
  */
 public class MaxPricePerOrderMR {
+	private static final Logger log = LoggerFactory.getLogger(MaxPricePerOrderMR.class);
+	
 	static class MaxPricePerOrderMapper extends Mapper<LongWritable, Text, OrderDetailVo, OrderDetailVo> {
 
 		/**
@@ -41,14 +45,14 @@ public class MaxPricePerOrderMR {
 				throws IOException, InterruptedException {
 			try {
 				String line = value.toString();
-				System.out.println(String.format("once mapper oper value=%s", line));
+				log.debug("once mapper oper value={}", line);
 				String orderId = line.split("\t")[0];
 				String productId = line.split("\t")[1];
 				double price = Double.valueOf(line.split("\t")[2]);
 
 				OrderDetailVo vo = new OrderDetailVo(orderId, productId, price);
 				context.write(vo, vo);
-				System.out.println(String.format("once mapper write key=%s value=%s", vo.toString(), vo));
+				log.debug("once mapper write key={} value={}", vo.toString(), vo);
 			} catch (NumberFormatException e) {
 				e.printStackTrace();
 			}
@@ -70,15 +74,14 @@ public class MaxPricePerOrderMR {
 			for (OrderDetailVo vo : value) {
 				records.add(new OrderDetailVo(vo.getOrderId(), vo.getProductId(), vo.getPrice()));
 			}
-			System.out.println(String.format("once reduce oper key=%s, value=%s", key.toString(), records));
+			log.debug("once reduce oper key=%s, value=%s", key.toString(), records);
 
 			OrderDetailVo maxPriceVo = records.stream().reduce((vo, anotherVo) -> {
 				return vo.getPrice() > anotherVo.getPrice() ? vo : anotherVo;
 			}).get();
 
-			System.out.println(String.format("max price vo is %s", maxPriceVo.toString()));
-			System.out.println(
-					String.format("once reduce write key=%s, value=%s", "max price records", maxPriceVo.toString()));
+			log.debug("max price vo is {}", maxPriceVo.toString());
+			log.debug("once reduce write key={}, value={}", "max price records", maxPriceVo.toString());
 			context.write(new Text("max price records"), new Text(maxPriceVo.toString()));
 		}
 
@@ -101,6 +104,8 @@ public class MaxPricePerOrderMR {
 		maxpriceJob.setOutputValueClass(Text.class);
 
 		maxpriceJob.setGroupingComparatorClass(OrderIdGroupingComparator.class);
+		maxpriceJob.setPartitionerClass(OrderIdPartition.class);
+		maxpriceJob.setNumReduceTasks(3);
 
 		FileInputFormat.setInputPaths(maxpriceJob, new Path("D:/tmp/mr/trade"));
 		FileOutputFormat.setOutputPath(maxpriceJob, new Path("D:/tmp/mr/trade/out_maxprice"));
