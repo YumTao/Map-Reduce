@@ -36,5 +36,13 @@ MapReduce分布式计算框架，用户只需编写具体业务代码即可。�
 2. 自定义outputFormat实现
 3. 分布式缓存实现
 4. mapreduce其他补充：计数器应用，多job串联
+
+		计数器使用
+		mapper.map/reducer.reduce对应的context对象可创建共有的计数器
+		//对枚举定义的自定义计数器加1
+		context.getCounter(MyCounter.MALFORORMED).increment(1);
+		//通过动态设置自定义计数器加1
+		context.getCounter("counterGroupa", "countera").increment(1);
+
 5. mapreduce参数优化：资源相关参数，容错相关参数，本地运行mapreduce作业，效率和稳定性相关参数
 文件：04_离线计算系统第4天
