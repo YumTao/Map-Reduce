@@ -1,6 +1,7 @@
 package com.yumtao.maxpricePerOrder;
 
 import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,8 +29,20 @@ import org.slf4j.LoggerFactory;
  */
 public class MaxPricePerOrderMR {
 	private static final Logger log = LoggerFactory.getLogger(MaxPricePerOrderMR.class);
-	
+
 	static class MaxPricePerOrderMapper extends Mapper<LongWritable, Text, OrderDetailVo, OrderDetailVo> {
+
+		// TODO 分布式缓存集群测试
+		@Override
+		protected void setup(Mapper<LongWritable, Text, OrderDetailVo, OrderDetailVo>.Context context)
+				throws IOException, InterruptedException {
+			URI[] cacheFiles = context.getCacheFiles();
+			if (null != cacheFiles && cacheFiles.length > 0) {
+				for (URI uri : cacheFiles) {
+					log.error(uri.getPath());
+				}
+			}
+		}
 
 		/**
 		 * 构造OrderDetailVo，OrderDetailVo输出
@@ -89,9 +102,9 @@ public class MaxPricePerOrderMR {
 
 	public static void main(String[] args) throws Exception {
 		Configuration conf = new Configuration();
-		conf.set("mapreduce.framework.name", "local");
-//		conf.set("mapreduce.framework.name", "yarn");
-//		conf.set("yarn.resourcemanager.hostname", "master");
+//		conf.set("mapreduce.framework.name", "local");
+		conf.set("mapreduce.framework.name", "yarn");
+		conf.set("yarn.resourcemanager.hostname", "singlenode");
 		Job maxpriceJob = Job.getInstance(conf);
 
 		maxpriceJob.setJarByClass(MaxPricePerOrderMR.class);
@@ -107,8 +120,10 @@ public class MaxPricePerOrderMR {
 		maxpriceJob.setPartitionerClass(OrderIdPartition.class);
 		maxpriceJob.setNumReduceTasks(3);
 
-		FileInputFormat.setInputPaths(maxpriceJob, new Path("D:/tmp/mr/trade"));
-		FileOutputFormat.setOutputPath(maxpriceJob, new Path("D:/tmp/mr/trade/out_maxprice"));
+//		FileInputFormat.setInputPaths(maxpriceJob, new Path("D:/tmp/mr/trade"));
+//		FileOutputFormat.setOutputPath(maxpriceJob, new Path("D:/tmp/mr/trade/out_maxprice"));
+		FileInputFormat.setInputPaths(maxpriceJob, new Path(args[0]));
+		FileOutputFormat.setOutputPath(maxpriceJob, new Path(args[1]));
 
 		boolean flag = maxpriceJob.waitForCompletion(true);
 		System.exit(flag ? 0 : 1);
