@@ -11,6 +11,7 @@
 		<module>flowcount</module>
 		<module>qq_friend</module>
 		<module>trade</module>
+		<module>my_component</module>
 	</modules>
 
 	<dependencies>

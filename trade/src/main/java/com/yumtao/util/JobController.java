@@ -46,6 +46,12 @@ public class JobController {
 			}
 		}
 
+		@Override
+		protected void setup(Mapper<LongWritable, Text, Text, Text>.Context context)
+				throws IOException, InterruptedException {
+			log.warn("both one job mapper start");
+		}
+
 		private void writeFriend2User(Text value, Mapper<LongWritable, Text, Text, Text>.Context context) {
 			log.debug("once map oper: value={}", value.toString());
 			String user2Friend = value.toString();
@@ -90,6 +96,11 @@ public class JobController {
 			}
 		}
 
+		@Override
+		protected void setup(Reducer<Text, Text, Text, Text>.Context context) throws IOException, InterruptedException {
+			log.warn("both one job reducer start");
+		}
+
 	}
 
 	static class BothAllFriendMapper extends Mapper<LongWritable, Text, Text, Text> {
@@ -106,6 +117,12 @@ public class JobController {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
+		}
+
+		@Override
+		protected void setup(Mapper<LongWritable, Text, Text, Text>.Context context)
+				throws IOException, InterruptedException {
+			log.warn("both ALL job mapper start");
 		}
 
 		private void sameInOut(Text value, Mapper<LongWritable, Text, Text, Text>.Context context)
@@ -137,12 +154,18 @@ public class JobController {
 			log.debug("once reduce write: key={}, value={}", userCp, bothAllfriends);
 		}
 
+		@Override
+		protected void setup(Reducer<Text, Text, Text, Text>.Context context) throws IOException, InterruptedException {
+			log.warn("both ALL job reducer start");
+		}
+
 	}
 
 	public static void main(String[] args) throws Exception {
 
-		FileUtils.forceDeleteOnExit(new File(BOTH_ALL_OUTPUT_FOLDER));
-		FileUtils.forceDeleteOnExit(new File(BOTH_ONE_OUTPUT_FOLDER));
+		FileUtils.forceDelete(new File(BOTH_ALL_OUTPUT_FOLDER));
+		FileUtils.forceDelete(new File(BOTH_ONE_OUTPUT_FOLDER));
+
 		Job bothOneJob = getBothOneJob();
 		Job bothAllJob = getBothAllJob();
 
@@ -211,4 +234,5 @@ public class JobController {
 
 		return bothOneFriendJob;
 	}
+	
 }
