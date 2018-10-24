@@ -19,6 +19,11 @@ import org.apache.hadoop.util.GenericOptionsParser;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
+/**
+ * 自定义InputFormat，实现对小文件的合并
+ * @author yumTao
+ *
+ */
 public class SmallFilesToSequenceFileMR extends Configured implements Tool {
 	static class SequenceFileMapper extends Mapper<NullWritable, BytesWritable, Text, BytesWritable> {
 		private Text filenameKey;
