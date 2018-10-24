@@ -1,0 +1,5 @@
+222.68.172.190	http://www.angularjs.cn/A00n
+222.68.172.191	http://www.yumtao.com
+222.68.172.192	http://www.baidu.com
+222.68.172.192	http://www.taobao.com
+222.68.172.192	http://www.aliyun.com
