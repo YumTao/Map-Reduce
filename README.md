@@ -102,7 +102,7 @@ MapReduce重要配置参数
 
 ## MapReduce并行度经验之谈
 
-###FileInputFormat切片机制
+### FileInputFormat切片机制
 
  切片主要由这几个值来运算决定
 
@@ -130,7 +130,7 @@ MapReduce重要配置参数
 2、运算任务的类型：CPU密集型还是IO密集型
 3、运算任务的数据量
 
-###maptask
+### maptask
 
 如果硬件配置为`2*12core + 64G`，恰当的map并行度是大约每个节点20-100个map，**最好每个map的执行时间至少一分钟**。
 
@@ -141,7 +141,7 @@ MapReduce重要配置参数
 
 - 如果input的文件非常的大，比如1TB，可以考虑将hdfs上的每个block size设大，比如设成256MB或者512MB
 
-###reducetask
+### reducetask
 
 reducetask数由代码手动设置`job.setNumReduceTasks(num)`，默认为1;
 
@@ -153,7 +153,7 @@ reducetask数由代码手动设置`job.setNumReduceTasks(num)`，默认为1;
 尽量不要运行太多的reduce task。对大多数job来说，最好rduce的个数最多和集群中的reduce持平，或者比集群的 reduce slots小。这个对于小集群而言，尤其重要。
 
 
-###自定义inputFormat实现
+### 自定义inputFormat实现
 
 目的：
 
