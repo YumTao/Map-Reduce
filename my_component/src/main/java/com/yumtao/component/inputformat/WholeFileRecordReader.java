@@ -14,6 +14,16 @@ import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 
+/**
+ * 自定义RecordReader
+ * nextKeyValue():kv读取策略
+ * getCurrentKey():获取k
+ * getCurrentValue():获取v
+ * getProgress():读取进度
+ * initialize():初始化方法
+ * @author yumTao
+ *
+ */
 class WholeFileRecordReader extends RecordReader<NullWritable, BytesWritable> {
 	private FileSplit fileSplit;
 	private Configuration conf;
@@ -26,6 +36,9 @@ class WholeFileRecordReader extends RecordReader<NullWritable, BytesWritable> {
 		this.conf = context.getConfiguration();
 	}
 
+	/**
+	 * 读取切片，设置kv值，这里是读取整个小文件内容做为value，key为null
+	 */
 	@Override
 	public boolean nextKeyValue() throws IOException, InterruptedException {
 		if (!processed) {
@@ -46,16 +59,25 @@ class WholeFileRecordReader extends RecordReader<NullWritable, BytesWritable> {
 		return false;
 	}
 
+	/**
+	 * 当前key返回null
+	 */
 	@Override
 	public NullWritable getCurrentKey() throws IOException, InterruptedException {
 		return NullWritable.get();
 	}
 
+	/**
+	 * 返回value
+	 */
 	@Override
 	public BytesWritable getCurrentValue() throws IOException, InterruptedException {
 		return value;
 	}
 
+	/**
+	 * 读取进程
+	 */
 	@Override
 	public float getProgress() throws IOException {
 		return processed ? 1.0f : 0.0f;
