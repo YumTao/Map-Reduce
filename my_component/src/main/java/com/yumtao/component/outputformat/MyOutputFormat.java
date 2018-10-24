@@ -27,6 +27,12 @@ public class MyOutputFormat extends FileOutputFormat<Text, NullWritable> {
 		return new MyRecordWriter();
 	}
 
+	/**
+	 * write():reduce的context.write一次，就调用一次
+	 * close():全部写出后，调用一次，一般用作关流
+	 * @author yumTao
+	 *
+	 */
 	static class MyRecordWriter extends RecordWriter<Text, NullWritable> {
 
 		private File localContent = new File("D:/tmp/mr/urlcontent/content.log");

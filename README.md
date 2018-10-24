@@ -32,10 +32,8 @@ MapReduce分布式计算框架，用户只需编写具体业务代码即可。�
 - 8.reducetask执行reduce，完成后输出文件到指定目录
 
 ## 待做工作
-1. 自定义inputFormat实现
-2. 自定义outputFormat实现
 3. 分布式缓存实现
-4. mapreduce其他补充：计数器应用，多job串联
+### mapreduce其他补充：计数器应用，多job串联
 
 	**计数器使用**
 
@@ -153,6 +151,213 @@ reducetask数由代码手动设置`job.setNumReduceTasks(num)`，默认为1;
 **约定reducetask数=partition分区数=输出文件数**
 
 尽量不要运行太多的reduce task。对大多数job来说，最好rduce的个数最多和集群中的reduce持平，或者比集群的 reduce slots小。这个对于小集群而言，尤其重要。
+
+
+###自定义inputFormat实现
+
+目的：
+
+- 可实现自定义切片规则
+- 可实现自定义分片kv读取策略
+
+步骤：
+
+1. 自定义class继承InputFormat抽象类（一般实现FileInputFormat）
+2. 自定义切片规则时重写getSplits()方法
+3. 自定义分片kv读取策略时，重写createRecordReader(),构造自定义的RecordReader对象。
+4. MR程序注册job，指定自定义InputFormat
+
+		job.setInputFormatClass(MyInputFormat.class);
+
+**自定义的RecordReader实现分片kv读取策略**
+
+步骤
+
+- 自定义class继承RecordReader<k,v>, 对应kv的泛型与目标输出的kv一致
+- 重写nextKeyValue(), 编写kv读取策略,设置对应kv值
+- 重写getCurrentKey(), 获取k值
+- 重写getCurrentValue(), 获取v值
+- 重写getProgress(), 编写分片读取进度
+
+**eg:** 
+
+	/**
+	 * @goal 自定义InputFormat。 
+	 * @notice 1.重写createRecordReader()方法，实现切片读取策略
+	 * @notice 2.重写isSplitable()方法，决定是否对文件切片
+	 * 
+	 * @author yumTao
+	 *
+	 */
+	public class WholeFileInputFormat extends FileInputFormat<NullWritable, BytesWritable> {
+		// 设置每个小文件不可分片,保证一个小文件生成一个key-value键值对
+		@Override
+		protected boolean isSplitable(JobContext context, Path file) {
+			return false;
+		}
+	
+		@Override
+		public RecordReader<NullWritable, BytesWritable> createRecordReader(InputSplit split, TaskAttemptContext context)
+				throws IOException, InterruptedException {
+			WholeFileRecordReader reader = new WholeFileRecordReader();
+			reader.initialize(split, context);
+			return reader;
+		}
+	
+		/**
+		 * @goal 自定义RecordReader
+		 * @notice nextKeyValue():kv读取策略。
+		 * @notice getCurrentKey():获取k
+		 * @notice getCurrentValue():获取v
+		 * @notice getProgress():读取进度
+		 * @notice initialize():初始化方法
+		 * 
+		 * @author yumTao
+		 *
+		 */
+		static class WholeFileRecordReader extends RecordReader<NullWritable, BytesWritable> {
+			private FileSplit fileSplit;
+			private Configuration conf;
+			private BytesWritable value = new BytesWritable();
+			private boolean processed = false;
+	
+			@Override
+			public void initialize(InputSplit split, TaskAttemptContext context) throws IOException, InterruptedException {
+				this.fileSplit = (FileSplit) split;
+				this.conf = context.getConfiguration();
+			}
+	
+			/**
+			 * 读取切片，设置kv值，这里是读取整个小文件内容做为value，key为null
+			 */
+			@Override
+			public boolean nextKeyValue() throws IOException, InterruptedException {
+				if (!processed) {
+					byte[] contents = new byte[(int) fileSplit.getLength()];
+					Path file = fileSplit.getPath();
+					FileSystem fs = file.getFileSystem(conf);
+					FSDataInputStream in = null;
+					try {
+						in = fs.open(file);
+						IOUtils.readFully(in, contents, 0, contents.length);
+						value.set(contents, 0, contents.length);
+					} finally {
+						IOUtils.closeStream(in);
+					}
+					processed = true;
+					return true;
+				}
+				return false;
+			}
+	
+			/**
+			 * 当前key返回null
+			 */
+			@Override
+			public NullWritable getCurrentKey() throws IOException, InterruptedException {
+				return NullWritable.get();
+			}
+	
+			/**
+			 * 返回value
+			 */
+			@Override
+			public BytesWritable getCurrentValue() throws IOException, InterruptedException {
+				return value;
+			}
+	
+			/**
+			 * 读取进程
+			 */
+			@Override
+			public float getProgress() throws IOException {
+				return processed ? 1.0f : 0.0f;
+			}
+	
+			@Override
+			public void close() throws IOException {
+				// do nothing
+			}
+		}
+	}
+
+### 自定义outputFormat实现
+目的：指定reduce后内容写出策略
+
+步骤：
+
+- 自定义class继承OutputFormat(一般继承FileOutputFormat)
+- 重写getRecordWriter()方法，获取自定义的RecordWriter对象
+- MR程序job注册，指定自定义的OutputFormat类型
+
+		job.setOutputFormatClass(MyOutputFormat.class);
+
+**自定义RecordWriter实现内容写出策略**
+
+步骤：
+
+- 自定义class继承RecordWriter
+- 重写write()方法，编写自己的写出策略
+
+**eg**
+
+	/**
+	 * @notice 自定义OutputFormat, 重写getRecordWriter方法 。
+	 * @goal 当前的业务是根据不同的key，写入到不同的文件中
+	 * 
+	 * @author yumTao
+	 *
+	 */
+	public class MyOutputFormat extends FileOutputFormat<Text, NullWritable> {
+	
+		@Override
+		public RecordWriter<Text, NullWritable> getRecordWriter(TaskAttemptContext context)
+				throws IOException, InterruptedException {
+			return new MyRecordWriter();
+		}
+	
+		/**
+		 * write():reduce的context.write一次，就调用一次
+		 * close():全部写出后，调用一次，一般用作关流
+		 * @author yumTao
+		 *
+		 */
+		static class MyRecordWriter extends RecordWriter<Text, NullWritable> {
+	
+			private File localContent = new File("D:/tmp/mr/urlcontent/content.log");
+			private File localToCrawler = new File("D:/tmp/mr/urlcontent/toCrawler.log");
+	
+			private BufferedWriter bWriter;
+	
+			private StringBuilder contentSb = new StringBuilder();
+			private StringBuilder toCrawlerSb = new StringBuilder();
+	
+			@Override
+			public void write(Text key, NullWritable value) throws IOException, InterruptedException {
+				if (key.toString().contains("tocrawl")) {
+					toCrawlerSb.append(key.toString());
+				} else {
+					contentSb.append(key.toString());
+				}
+			}
+	
+			@Override
+			public void close(TaskAttemptContext context) throws IOException, InterruptedException {
+				writeToFile(contentSb.toString(), localContent);
+				writeToFile(toCrawlerSb.toString(), localToCrawler);
+			}
+	
+			private void writeToFile(String content, File descFile) throws IOException {
+				if (StringUtils.isNotEmpty(content)) {
+					bWriter = new BufferedWriter(new FileWriter(descFile));
+					bWriter.write(content);
+					bWriter.close();
+				}
+			}
+	
+		}
+	
+	}
 
 
 ### 自定义Partitioner
