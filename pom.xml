@@ -12,6 +12,7 @@
 		<module>qq_friend</module>
 		<module>trade</module>
 		<module>my_component</module>
+		<module>click_flow</module>
 	</modules>
 
 	<dependencies>
