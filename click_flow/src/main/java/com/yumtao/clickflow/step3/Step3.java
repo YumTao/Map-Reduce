@@ -1,7 +1,9 @@
-package com.yumtao.clickflow.step2;
+package com.yumtao.clickflow.step3;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.Executors;
 
 import org.apache.commons.io.FileUtils;
@@ -19,21 +21,22 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.yumtao.clickflow.step1.Step1;
-import com.yumtao.clickflow.util.DateUtil;
+import com.yumtao.clickflow.step2.SessionGroup;
 import com.yumtao.clickflow.vo.AccessMsgByStep2;
+import com.yumtao.clickflow.vo.AccessMsgStep3Out;
 
 /**
  * @author yumTao
- * @goal resources下，对step1的结果进行梳理，得到图step2格式
+ * @goal resources下，对step1的结果进行梳理，得到图step3格式
  * @mapper 构造所需要的格式{ session,cookie,timestamp,url,停留时长，第几步} 设置初始停留时长值 }
- * @notice1 自定义groupingComparator,使同一session的多条记录进入同一个reduce方法，根据不同记录的时间差来得到正确的页面停留时长。
+ * @notice1 自定义groupingComparator,使同一session的多条记录进入同一个reduce方法，根据不同记录来构造该用户的浏览起点与终点。
  * @notice2 排序策略：先根据session正序，其次根据时间正序。
- * @reducer 计算停留时长，并输出。最后一个页面则输出默认停留时长
+ * @reducer 得到该用户的访问起始时间、结束时间、进入页面、结束页面等浏览痕迹，构造输出对象，并输出
  */
-public class Step2 {
-	private static final Logger log = LoggerFactory.getLogger(Step2.class);
+public class Step3 {
+	private static final Logger log = LoggerFactory.getLogger(Step3.class);
 
-	static class Step2Mapper extends Mapper<LongWritable, Text, AccessMsgByStep2, AccessMsgByStep2> {
+	static class Step3Mapper extends Mapper<LongWritable, Text, AccessMsgByStep2, AccessMsgByStep2> {
 
 		@Override
 		protected void map(LongWritable key, Text value,
@@ -55,43 +58,43 @@ public class Step2 {
 
 	}
 
-	static class Step2Reducer extends Reducer<AccessMsgByStep2, AccessMsgByStep2, AccessMsgByStep2, NullWritable> {
+	static class Step3Reducer extends Reducer<AccessMsgByStep2, AccessMsgByStep2, AccessMsgStep3Out, NullWritable> {
 
-		private final static long DEFAULT_STAYTIME = 30;
+		private AccessMsgByStep2 endMsg;
 
 		@Override
 		protected void reduce(AccessMsgByStep2 key, Iterable<AccessMsgByStep2> msgs,
-				Reducer<AccessMsgByStep2, AccessMsgByStep2, AccessMsgByStep2, NullWritable>.Context context)
+				Reducer<AccessMsgByStep2, AccessMsgByStep2, AccessMsgStep3Out, NullWritable>.Context context)
 				throws IOException, InterruptedException {
 
+			AccessMsgStep3Out result = new AccessMsgStep3Out();
 			int step = 1;
-			AccessMsgByStep2 old = null;
-			for (AccessMsgByStep2 iter : msgs) {
-				AccessMsgByStep2 now = cloneNew(iter);
-				now.setStep(step++);
-				now.setStayTime(DEFAULT_STAYTIME); // 设置默认停留时间
-				if (null != old) {
-					// 更正上一个停留时间（new - old）
-					old.setStayTime(DateUtil.getSecBetween(old.getTime(), now.getTime()));
-					// 写出上一个
-					context.write(old, NullWritable.get());
-					log.debug("reduce write {}", old.toString());
+			Set<String> pageCache = new HashSet<>();
+			for (AccessMsgByStep2 tmp : msgs) {
+				if (step++ == 1) {
+					result.setSession(tmp.getSession());
+					result.setIp(tmp.getIp());
+					result.setCookie(tmp.getCookie());
+					result.setStarttime(tmp.getTimestamp());
+					result.setStarturl(tmp.getUrl());
+					result.setReferal(tmp.getReferal());
 				}
-				old = now;
+				pageCache.add(tmp.getUrl());
+				endMsg = tmp;
 			}
-			context.write(old, NullWritable.get());
-			log.warn("reduce write {}", old.toString());
-		}
 
-		private AccessMsgByStep2 cloneNew(AccessMsgByStep2 old) {
-			return new AccessMsgByStep2(old.getTimestamp(), old.getIp(), old.getCookie(), old.getSession(),
-					old.getUrl(), old.getReferal());
+			result.setEndtime(endMsg.getTimestamp());
+			result.setEndurl(endMsg.getUrl());
+			result.setAccessPageNum(pageCache.size());
+
+			context.write(result, NullWritable.get());
+			log.warn("reduce write {}", result.toString());
 		}
 
 	}
 
 	public static void main(String[] args) throws Exception {
-		deleteDir("D:/tmp/mr/click_flow/step2");
+		deleteDir("D:/tmp/mr/click_flow/step3");
 
 		Configuration conf = new Configuration();
 		Job step2 = Job.getInstance(conf);
@@ -103,16 +106,16 @@ public class Step2 {
 
 		step2.setGroupingComparatorClass(SessionGroup.class);
 
-		step2.setMapperClass(Step2Mapper.class);
-		step2.setReducerClass(Step2Reducer.class);
+		step2.setMapperClass(Step3Mapper.class);
+		step2.setReducerClass(Step3Reducer.class);
 
 		step2.setMapOutputKeyClass(AccessMsgByStep2.class);
 		step2.setMapOutputValueClass(AccessMsgByStep2.class);
-		step2.setOutputKeyClass(AccessMsgByStep2.class);
+		step2.setOutputKeyClass(AccessMsgStep3Out.class);
 		step2.setOutputValueClass(NullWritable.class);
 
 		FileInputFormat.setInputPaths(step2, new Path("D:/tmp/mr/click_flow/step1/part-r-00000"));
-		FileOutputFormat.setOutputPath(step2, new Path("D:/tmp/mr/click_flow/step2"));
+		FileOutputFormat.setOutputPath(step2, new Path("D:/tmp/mr/click_flow/step3"));
 
 		boolean flag = step2.waitForCompletion(true);
 		System.exit(flag ? 0 : 1);

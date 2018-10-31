@@ -13,7 +13,7 @@ import com.yumtao.clickflow.util.DateUtil;
  * @author yumTao
  *
  */
-public class AccessMsg implements WritableComparable<AccessMsg> {
+public class AccessMsgByStep1 implements WritableComparable<AccessMsgByStep1> {
 
 	private String timestamp;
 	private String ip;
@@ -43,7 +43,7 @@ public class AccessMsg implements WritableComparable<AccessMsg> {
 	}
 
 	@Override
-	public int compareTo(AccessMsg o) {
+	public int compareTo(AccessMsgByStep1 o) {
 		try {
 			Date right = o.getTime();
 			Date left = this.getTime();
@@ -54,10 +54,10 @@ public class AccessMsg implements WritableComparable<AccessMsg> {
 		return 0;
 	}
 
-	public AccessMsg() {
+	public AccessMsgByStep1() {
 	}
 
-	public AccessMsg(String timestamp, String ip, String cookie, String session, String url, String referal) {
+	public AccessMsgByStep1(String timestamp, String ip, String cookie, String session, String url, String referal) {
 		this.timestamp = timestamp;
 		this.ip = ip;
 		this.cookie = cookie;

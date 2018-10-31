@@ -21,10 +21,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.yumtao.clickflow.util.DateUtil;
-import com.yumtao.clickflow.vo.AccessMsg;
+import com.yumtao.clickflow.vo.AccessMsgByStep1;
 
 /**
  * @author yumTao
+ * @goal resources下，对文件access.log.fensi进行数据清洗，得到图step1的格式
  * @mapper: 构造浏览记录对象{ 时间戳，ip,cookie,session,url,referal格式，设置初始session值 }， 根据时间正序排列
  * @reducer： 比对两条同一ip的浏览记录对象，判断是否时间差在30分钟内，进而决定是否是同一个session
  *
@@ -33,13 +34,13 @@ public class Step1 {
 
 	private static final Logger log = LoggerFactory.getLogger(Step1.class);
 
-	static class Step1Mapper extends Mapper<LongWritable, Text, AccessMsg, NullWritable> {
+	static class Step1Mapper extends Mapper<LongWritable, Text, AccessMsgByStep1, NullWritable> {
 
 		String session = "session_";
 
 		@Override
 		protected void map(LongWritable key, Text value,
-				Mapper<LongWritable, Text, AccessMsg, NullWritable>.Context context)
+				Mapper<LongWritable, Text, AccessMsgByStep1, NullWritable>.Context context)
 				throws IOException, InterruptedException {
 
 			String line = value.toString();
@@ -64,7 +65,7 @@ public class Step1 {
 			}
 
 			long sessionNum = context.getCounter("counter", "session").getValue();
-			AccessMsg msg = new AccessMsg(timestamp, ip, "defalutcookie", session + sessionNum, url, referal);
+			AccessMsgByStep1 msg = new AccessMsgByStep1(timestamp, ip, "defalutcookie", session + sessionNum, url, referal);
 			context.getCounter("counter", "session").increment(1);
 			context.write(msg, NullWritable.get());
 			log.debug("mapper write {}", msg.toString());
@@ -72,7 +73,7 @@ public class Step1 {
 
 	}
 
-	static class Step1Reducer extends Reducer<AccessMsg, NullWritable, AccessMsg, NullWritable> {
+	static class Step1Reducer extends Reducer<AccessMsgByStep1, NullWritable, AccessMsgByStep1, NullWritable> {
 
 		private static Map<String, String> ip2DateSession = new HashMap<>(); // ip=日期&session缓存
 
@@ -80,8 +81,8 @@ public class Step1 {
 		private final long SESSION_TIMEOUT = 30;
 
 		@Override
-		protected void reduce(AccessMsg key, Iterable<NullWritable> value,
-				Reducer<AccessMsg, NullWritable, AccessMsg, NullWritable>.Context context)
+		protected void reduce(AccessMsgByStep1 key, Iterable<NullWritable> value,
+				Reducer<AccessMsgByStep1, NullWritable, AccessMsgByStep1, NullWritable>.Context context)
 				throws IOException, InterruptedException {
 
 			log.debug("reducer read {}", key.toString());
@@ -122,9 +123,9 @@ public class Step1 {
 		step1.setMapperClass(Step1Mapper.class);
 		step1.setReducerClass(Step1Reducer.class);
 
-		step1.setMapOutputKeyClass(AccessMsg.class);
+		step1.setMapOutputKeyClass(AccessMsgByStep1.class);
 		step1.setMapOutputValueClass(NullWritable.class);
-		step1.setOutputKeyClass(AccessMsg.class);
+		step1.setOutputKeyClass(AccessMsgByStep1.class);
 		step1.setOutputValueClass(NullWritable.class);
 
 		FileInputFormat.setInputPaths(step1, new Path("D:/tmp/mr/click_flow/access.log.fensi"));

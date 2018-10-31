@@ -13,7 +13,7 @@ import com.yumtao.clickflow.util.DateUtil;
  * @author yumTao
  *
  */
-public class AccessMsgByStep implements WritableComparable<AccessMsgByStep> {
+public class AccessMsgByStep2 implements WritableComparable<AccessMsgByStep2> {
 
 	private String timestamp;
 	private String ip;
@@ -49,9 +49,10 @@ public class AccessMsgByStep implements WritableComparable<AccessMsgByStep> {
 	}
 
 	@Override
-	public int compareTo(AccessMsgByStep o) {
+	public int compareTo(AccessMsgByStep2 o) {
 		try {
-			int sessionCompare = Integer.valueOf(this.session.replace("session_", "")) - (Integer.valueOf(o.getSession().replace("session_", "")));
+			int sessionCompare = Integer.valueOf(this.session.replace("session_", ""))
+					- (Integer.valueOf(o.getSession().replace("session_", "")));
 			if (sessionCompare == 0) {
 				Date right = o.getTime();
 				Date left = this.getTime();
@@ -65,10 +66,10 @@ public class AccessMsgByStep implements WritableComparable<AccessMsgByStep> {
 		return 0;
 	}
 
-	public AccessMsgByStep() {
+	public AccessMsgByStep2() {
 	}
 
-	public AccessMsgByStep(String timestamp, String ip, String cookie, String session, String url, String referal) {
+	public AccessMsgByStep2(String timestamp, String ip, String cookie, String session, String url, String referal) {
 		this.timestamp = timestamp;
 		this.ip = ip;
 		this.cookie = cookie;
@@ -79,8 +80,7 @@ public class AccessMsgByStep implements WritableComparable<AccessMsgByStep> {
 
 	@Override
 	public String toString() {
-		return timestamp + "\t" + ip + "\t" + cookie + "\t" + session + "\t" + url + "\t" + referal + "\t" + step + "\t"
-				+ stayTime;
+		return session + "\t" + ip + "\t" + timestamp + "\t" + url + "\t" + stayTime + "\t" + step;
 	}
 
 	public Date getTime() {

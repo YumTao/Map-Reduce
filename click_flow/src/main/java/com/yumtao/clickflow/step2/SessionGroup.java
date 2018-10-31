@@ -2,12 +2,16 @@ package com.yumtao.clickflow.step2;
 
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.io.WritableComparator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import com.yumtao.clickflow.vo.AccessMsgByStep;
+import com.yumtao.clickflow.vo.AccessMsgByStep2;
 
 public class SessionGroup extends WritableComparator {
+	private static final Logger log = LoggerFactory.getLogger(SessionGroup.class);
+	
 	public SessionGroup() {
-		super(AccessMsgByStep.class, true);
+		super(AccessMsgByStep2.class, true);
 	}
 
 	/**
@@ -16,9 +20,9 @@ public class SessionGroup extends WritableComparator {
 	@SuppressWarnings("rawtypes")
 	@Override
 	public int compare(WritableComparable a, WritableComparable b) {
-		AccessMsgByStep left = (AccessMsgByStep) a;
-		AccessMsgByStep right = (AccessMsgByStep) b;
-		System.out.println(String.format("grouping compare left=%s, right=%s", left.toString(), right.toString()));
+		AccessMsgByStep2 left = (AccessMsgByStep2) a;
+		AccessMsgByStep2 right = (AccessMsgByStep2) b;
+		log.debug("grouping compare left={}, right={}", left.toString(), right.toString());
 		return left.getSession().compareTo(right.getSession());
 	}
 }
